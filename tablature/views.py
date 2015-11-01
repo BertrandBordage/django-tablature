@@ -18,7 +18,7 @@ class TableView(ListView):
     search_lookups = ()
     orderings = {}
     filters = {}
-    template_name = 'table.html'
+    template_name = 'tablature/table.html'
     results_per_page = 15
 
     def get_columns(self):
