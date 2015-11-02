@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}
+  {{ verbose_name_plural|capfirst }}
+{% endblock %}
+
+
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/x-scss" href="{% static 'css/tablature.scss' %}" />
+{% endblock %}
+
+{% block js %}
+  {{ block.super }}
+  <script src="{% static 'js/tablature.js' %}"></script>
+{% endblock %}
+
+
+{% block content %}
+  <h1>
+    {{ verbose_name_plural|capfirst }}
+  </h1>
+  {% include 'tablature/includes/table.html' %}
+
+  <script>
+    {% include 'tablature/includes/table_init.js' %}
+  </script>
+{% endblock %}
