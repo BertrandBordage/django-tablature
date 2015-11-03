@@ -138,7 +138,6 @@ function Table ($container, columns, columnsWidths, sortables, filters,
 
   this.setData();
   this.update();
-//  this.setCount(this.getNumPages());
 }
 
 Table.prototype.createSortable = function (column, $flex, i) {
@@ -311,6 +310,19 @@ Table.prototype.getData = function () {
   };
 };
 
+Table.prototype.updateLocationHash = function (queryData) {
+  var queryString = '';
+    for (var k in queryData) {
+      if (queryData.hasOwnProperty(k)) {
+        if(queryString != "") {
+          queryString += "&";
+        }
+        queryString += k + '=' + encodeURIComponent(queryData[k])
+      }
+    }
+    document.location.hash = queryString;
+};
+
 Table.prototype.onKeyDown = function (e) {
   if (this.$input.is(':focus')) {
       return;
@@ -400,7 +412,7 @@ Table.prototype.update = function () {
     this.updateGrabbable();
     this.$container.find('[title]').tooltip(
       {container: 'body', trigger: 'hover'});
-    document.location.hash = jQuery.param(queryData);
+    this.updateLocationHash(queryData);
     this.$spinner.hide();
   }.bind(this));
 };
