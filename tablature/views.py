@@ -7,6 +7,7 @@ from django.db.models import FieldDoesNotExist, Q
 from django.db.models.query import ValuesListQuerySet
 from django.http import HttpResponse
 from django.utils.encoding import force_text
+from django.utils.http import urlunquote
 from django.utils.text import capfirst
 from django.views.generic import ListView
 
@@ -107,7 +108,7 @@ class TableView(ListView):
         GET = self.request.GET
         qs = self.search(qs, GET.get('q'))
 
-        filter_choices = GET.get('choices', '').split(',')
+        filter_choices = map(urlunquote, GET.get('choices', '').split(','))
         for column, choice in zip(self.get_columns(), filter_choices):
             if choice:
                 method = getattr(self, 'filter_' + column, None)

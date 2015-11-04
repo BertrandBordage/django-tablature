@@ -293,7 +293,7 @@ Table.prototype.setData = function () {
           if (s === '') {
             return null;
           }
-          return s;
+          return decodeURIComponent(s);
         });
     } else if (k == 'page') {
       this.pagination.current = parseInt(decodeURIComponent(v));
@@ -305,7 +305,12 @@ Table.prototype.getData = function () {
   return {
     q: this.$input.val(),
     orderings: this.orderings.join(),
-    choices: this.filterChoices.join(),
+    choices: this.filterChoices.map(function (s, _) {
+        if (s === null) {
+          return '';
+        }
+        return encodeURIComponent(s);
+      }).join(),
     page: this.pagination.current
   };
 };
