@@ -322,7 +322,7 @@ Table.prototype.updateLocationHash = function (queryData) {
         if(queryString != "") {
           queryString += "&";
         }
-        queryString += k + '=' + encodeURIComponent(queryData[k])
+        queryString += k + '=' + encodeURIComponent(queryData[k]);
       }
     }
     document.location.hash = queryString;
@@ -397,6 +397,7 @@ Table.prototype.update = function () {
   if (typeof this.currentAjax !== 'undefined') {
     this.currentAjax.abort();
   }
+  this.$results.find('[data-original-title]').tooltip('destroy');
   this.updateSortables();
   this.updateFilters();
   this.$spinner.show();
@@ -404,7 +405,6 @@ Table.prototype.update = function () {
   this.currentAjax = $.ajax({
     data: queryData
   }).done(function (data) {
-    this.$container.find('[data-original-title]').tooltip('destroy');
     this.setCount(data['count']);
     this.$results.empty();
     data['results'].forEach(function (dataRow) {
