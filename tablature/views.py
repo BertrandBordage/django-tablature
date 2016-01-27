@@ -33,7 +33,7 @@ class TableView(ListView):
         except FieldDoesNotExist:
             pass
 
-    def get_verbose_columns(self, column):
+    def get_verbose_column(self, column):
         if column in self.verbose_columns:
             return self.verbose_columns[column]
         field = self.get_field(column)
@@ -52,14 +52,15 @@ class TableView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(TableView, self).get_context_data(**kwargs)
+        columns = self.get_columns()
         context.update(
             verbose_name_plural=self.model._meta.verbose_name_plural,
-            columns=map(self.get_verbose_columns, self.get_columns()),
-            columns_widths=map(self.get_column_width, self.get_columns()),
+            columns=[self.get_verbose_column(c) for c in columns],
+            columns_widths=[self.get_column_width(c) for c in columns],
             search_lookups=self.search_lookups,
-            sortables=['true' if self.get_ordering_for_column(c, 1) else 'false'
-                       for c in self.get_columns()],
-            filters=map(self.get_filter, self.get_columns()),
+            sortables=['true' if self.get_ordering_for_column(c, 1)
+                       else 'false' for c in columns],
+            filters=[self.get_filter(c) for c in columns],
             results_per_page=self.results_per_page)
         return context
 
@@ -107,9 +108,10 @@ class TableView(ListView):
         qs = self.get_queryset()
         GET = self.request.GET
         qs = self.search(qs, GET.get('q'))
+        columns = self.get_columns()
 
         filter_choices = map(urlunquote, GET.get('choices', '').split(','))
-        for column, choice in zip(self.get_columns(), filter_choices):
+        for column, choice in zip(columns, filter_choices):
             if choice:
                 method = getattr(self, 'filter_' + column, None)
                 qs = (qs.filter(**{column: choice}) if method is None
@@ -117,7 +119,7 @@ class TableView(ListView):
 
         order_directions = map(int, GET.get('orderings', '').split(','))
         order_by = []
-        for column, direction in zip(self.get_columns(), order_directions):
+        for column, direction in zip(columns, order_directions):
             order_by.extend(self.get_ordering_for_column(column, direction))
         if order_by:
             qs = qs.order_by(*order_by)
