@@ -57,13 +57,13 @@ class TableView(ListView):
             columns=map(self.get_verbose_columns, self.get_columns()),
             columns_widths=map(self.get_column_width, self.get_columns()),
             search_lookups=self.search_lookups,
-            sortables=['true' if self.get_ordering(c, 1) else 'false'
+            sortables=['true' if self.get_ordering_for_column(c, 1) else 'false'
                        for c in self.get_columns()],
             filters=map(self.get_filter, self.get_columns()),
             results_per_page=self.results_per_page)
         return context
 
-    def get_ordering(self, column, direction):
+    def get_ordering_for_column(self, column, direction):
         """
         Returns a tuple of lookups to order by for the given column
         and direction. Direction is an integer, either -1, 0 or 1.
@@ -118,7 +118,7 @@ class TableView(ListView):
         order_directions = map(int, GET.get('orderings', '').split(','))
         order_by = []
         for column, direction in zip(self.get_columns(), order_directions):
-            order_by.extend(self.get_ordering(column, direction))
+            order_by.extend(self.get_ordering_for_column(column, direction))
         if order_by:
             qs = qs.order_by(*order_by)
         return qs.distinct()
