@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import json
 
 from django.db.models import FieldDoesNotExist, Q
-from django.db.models.query import ValuesListQuerySet
+from django.db.models.query import QuerySet
 from django.http import HttpResponse
 from django.utils.encoding import force_text
 from django.utils.http import urlunquote
@@ -89,7 +89,7 @@ class TableView(ListView):
         if column not in self.filters:
             return ()
         values = self.filters[column]
-        if isinstance(values, ValuesListQuerySet):
+        if isinstance(values, QuerySet):
             values = tuple(values.all())
         assert len(values[0]) == 2, 'Each filter must be a value/verbose pair.'
         return values
