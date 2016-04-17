@@ -17,6 +17,7 @@ setup(
     author='Bertrand Bordage',
     author_email='bordage.bertrand@gmail.com',
     url='https://github.com/BertrandBordage/django-tablature',
+    description='Easy to use library to display data in an ergonomic and fast table.',
     long_description=open('README.rst').read(),
     classifiers=[
         'Development Status :: 3 - Alpha',
