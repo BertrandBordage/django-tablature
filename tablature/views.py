@@ -9,17 +9,37 @@ from django.http import HttpResponse
 from django.utils.encoding import force_text
 from django.utils.http import urlunquote
 from django.utils.text import capfirst
-from django.views.generic import ListView
+from django.views.generic import ListView, TemplateView, View
+from django.views.generic.list import MultipleObjectMixin
 
 
-class TableView(ListView):
+class TablePageViewMixin:
+    template_name = 'tablature/table_page.html'
+    ajax_url = ''
+
+    def get_ajax_url(self):
+        return self.ajax_url
+
+    def get_context_data(self, **kwargs):
+        context = super(TablePageViewMixin, self).get_context_data(**kwargs)
+        context.update(
+            verbose_name_plural=self.model._meta.verbose_name_plural,
+            ajax_url=self.get_ajax_url(),
+        )
+        return context
+
+
+class TablePageView(TablePageViewMixin, TemplateView):
+    pass
+
+
+class TableDataViewMixin:
     columns = ()
     columns_widths = {}
     verbose_columns = {}
     search_lookups = ()
     orderings = {}
     filters = {}
-    template_name = 'tablature/table_page.html'
     results_per_page = 15
 
     def get_columns(self):
@@ -50,19 +70,18 @@ class TableView(ListView):
             return self.columns_widths[column]
         return 'initial'
 
-    def get_context_data(self, **kwargs):
-        context = super(TableView, self).get_context_data(**kwargs)
+    def get_config(self):
         columns = self.get_columns()
-        context.update(
-            verbose_name_plural=self.model._meta.verbose_name_plural,
-            columns=[self.get_verbose_column(c) for c in columns],
-            columns_widths=[self.get_column_width(c) for c in columns],
-            search_lookups=self.search_lookups,
-            sortables=['true' if self.get_ordering_for_column(c, 1)
-                       else 'false' for c in columns],
-            filters=[self.get_filter(c) for c in columns],
-            results_per_page=self.results_per_page)
-        return context
+        return {
+            'columns': [force_text(self.get_verbose_column(c))
+                        for c in columns],
+            'columns_widths': [self.get_column_width(c) for c in columns],
+            'search_enabled': bool(self.search_lookups),
+            'sortables': [bool(self.get_ordering_for_column(c, 1))
+                          for c in columns],
+            'filters': [self.get_filter(c) for c in columns],
+            'results_per_page': self.results_per_page,
+        }
 
     def get_ordering_for_column(self, column, direction):
         """
@@ -105,8 +124,8 @@ class TableView(ListView):
         return queryset.none()
 
     def get_results_queryset(self):
-        qs = self.get_queryset()
         GET = self.request.GET
+        qs = self.get_queryset()
         qs = self.search(qs, GET.get('q'))
         columns = self.get_columns()
 
@@ -117,7 +136,10 @@ class TableView(ListView):
                 qs = (qs.filter(**{column: choice}) if method is None
                       else method(qs, choice))
 
-        order_directions = map(int, GET.get('orderings', '').split(','))
+        if 'orderings' in GET:
+            order_directions = map(int, GET.get('orderings', '').split(','))
+        else:
+            order_directions = [0] * len(columns)
         order_by = []
         for column, direction in zip(columns, order_directions):
             order_by.extend(self.get_ordering_for_column(column, direction))
@@ -151,8 +173,23 @@ class TableView(ListView):
         return {'results': self.get_results(),
                 'count': self.get_results_queryset().count()}
 
+    def get_json_response(self):
+        data = (self.get_config() if 'get_config' in self.request.GET
+                else self.get_data())
+        response = HttpResponse(json.dumps(data),
+                                content_type='application/json')
+        # FIXME: This may be a security issue.
+        response['Access-Control-Allow-Origin'] = '*'
+        return response
+
+
+class TableDataView(TableDataViewMixin, MultipleObjectMixin, View):
+    def get(self, request, *args, **kwargs):
+        return self.get_json_response()
+
+
+class TableView(TablePageViewMixin, TableDataViewMixin, ListView):
     def get(self, request, *args, **kwargs):
         if request.is_ajax():
-            return HttpResponse(json.dumps(self.get_data()),
-                                content_type='application/json')
+            return self.get_json_response()
         return super(TableView, self).get(request, *args, **kwargs)

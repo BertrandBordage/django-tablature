@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+  {{ verbose_name_plural|capitalize }}
+{% endblock %}
+
+
+{% block css %}
+  {{ super() }}
+  <link rel="stylesheet" type="text/less" href="{{ static('css/tablature.less') }}" />
+{% endblock %}
+
+
+{% block content %}
+  <h1>
+    {{ verbose_name_plural|capitalize }}
+  </h1>
+  {% include 'tablature/includes/table.html' %}
+{% endblock %}
+
+
+{% block js %}
+  {{ super() }}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.6.1/less.min.js"></script>
+  <script src="{{ static('js/tablature.js') }}"></script>
+{% endblock %}

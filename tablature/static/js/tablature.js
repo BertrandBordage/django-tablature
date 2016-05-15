@@ -1,4 +1,4 @@
-function Pagination ($pagination, switchPageHandler) {
+function Pagination($pagination, switchPageHandler) {
   this.$pagination = $pagination;
   this.switchPageHandler = switchPageHandler;
   this.current = 0;
@@ -88,39 +88,56 @@ Pagination.prototype.update = function () {
   this.createPageLinks();
 };
 
-function Table ($container, columns, columnsWidths, sortables, filters,
-                resultsPerPage, resultsString, sortableString, filterString,
-                clearFilterString) {
+function Table($container) {
   this.$container = $container;
+  this.$config = $container.find('.config');
+  this.ajaxUrl = this.$config.find('.ajax-url').text();
   this.$tableContainer = $container.find('.table-responsive');
   this.$table = this.$tableContainer.find('table');
   this.$head = this.$table.find('thead');
   this.$results = this.$table.find('tbody');
-  this.$input = $container.find('input');
-  this.$input.parents('form').submit(function (e) {
+  this.$searchForm = $container.find('.search-form');
+  this.$searchInput = this.$searchForm.find('input');
+  this.$searchForm.submit(function (e) {
     e.preventDefault();
     this.update();
   }.bind(this));
   this.$count = $container.find('.count');
   this.$spinner = $container.find('.spinner');
-  this.columns = columns;
-  this.columnsWidths = columnsWidths;
-  this.sortables = sortables;
-  this.$sortablesArray = [];
-  this.filters = filters;
-  this.$filtersArray = [];
-  this.resultsString = resultsString;
-  this.sortableString = sortableString;
-  this.filterString = filterString;
-  this.clearFilterString = clearFilterString;
+  $.ajax({
+    url: this.ajaxUrl,
+    data: {get_config: null},
+    dataType: 'json'
+  }).done(function (data) {
+    this.config = data;
+    this.columns = this.config['columns'];
+    this.columnsWidths = this.config['columns_widths'];
+    this.searchEnabled = this.config['search_enabled'];
+    this.sortables = this.config['sortables'];
+    this.$sortablesArray = [];
+    this.filters = this.config['filters'];
+    this.$filtersArray = [];
+    this.resultsPerPage = this.config['results_per_page'];
+
+    if (!this.searchEnabled) {
+      this.$searchForm.hide();
+    }
+
+    this.createHeaders();
+    this.setData();
+    this.update();
+  }.bind(this));
+  var $messages = this.$config.find('.messages');
+  this.resultsString = $messages.find('.results').html();
+  this.sortableString = $messages.find('.sort-by').html();
+  this.filterString = $messages.find('.filter-by').html();
+  this.clearFilterString = $messages.find('.clear-filter').html();
   this.orderings = [];
   this.sortIcons = {
     '-1': 'fa-sort-desc', '0': 'fa-sort', '1': 'fa-sort-asc'
   };
   this.filterChoices = [];
-  this.createHeaders();
   this.count = 0;
-  this.resultsPerPage = resultsPerPage;
   this.pagination = new Pagination(
     $container.find('.pagination'), this.update.bind(this));
 
@@ -135,9 +152,6 @@ function Table ($container, columns, columnsWidths, sortables, filters,
   this.$results.mousedown(this.onGrab.bind(this));
   $(document).mousemove(this.onMove.bind(this));
   $(document).mouseup(this.onUnGrab.bind(this));
-
-  this.setData();
-  this.update();
 }
 
 Table.prototype.createSortable = function (column, $flex, i) {
@@ -283,7 +297,7 @@ Table.prototype.setData = function () {
     var t = kv.split('=');
     var k = t[0], v = t[1];
     if (k == 'q') {
-      this.$input.val(decodeURIComponent(v));
+      this.$searchInput.val(decodeURIComponent(v));
     } else if (k == 'orderings') {
       this.orderings = decodeURIComponent(v).split(',').map(
         function (s, _) { return parseInt(s); });
@@ -303,7 +317,7 @@ Table.prototype.setData = function () {
 
 Table.prototype.getData = function () {
   return {
-    q: this.$input.val(),
+    q: this.$searchInput.val(),
     orderings: this.orderings.join(),
     choices: this.filterChoices.map(function (s, _) {
         if (s === null) {
@@ -329,7 +343,7 @@ Table.prototype.updateLocationHash = function (queryData) {
 };
 
 Table.prototype.onKeyDown = function (e) {
-  if (this.$input.is(':focus')) {
+  if (this.$searchInput.is(':focus')) {
       return;
   }
   var boundKeys = [33, 34, 35, 36, 37, 39];
@@ -339,7 +353,7 @@ Table.prototype.onKeyDown = function (e) {
 };
 
 Table.prototype.onKeyUp = function (e) {
-  if (this.$input.is(':focus')) {
+  if (this.$searchInput.is(':focus')) {
     return;
   }
   var newPage = null;
@@ -403,7 +417,9 @@ Table.prototype.update = function () {
   this.$spinner.show();
   var queryData = this.getData();
   this.currentAjax = $.ajax({
-    data: queryData
+    url: this.ajaxUrl,
+    data: queryData,
+    dataType: 'json'
   }).done(function (data) {
     this.setCount(data['count']);
     this.$results.empty();
@@ -421,3 +437,9 @@ Table.prototype.update = function () {
     this.$spinner.hide();
   }.bind(this));
 };
+
+$(function () {
+  $('.tablature-table').each(function () {
+    new Table($(this));
+  });
+});
