@@ -2,12 +2,15 @@
 
 from __future__ import unicode_literals
 
+from django.contrib.postgres.search import SearchVector, SearchQuery
+from django.db import connections
 from django.db.models import FieldDoesNotExist, Q
 from django.db.models.query import QuerySet
 from django.http import JsonResponse
 from django.utils.encoding import force_text
 from django.utils.http import urlunquote
 from django.utils.text import capfirst
+from django.utils.translation import get_language
 from django.views.generic import ListView, TemplateView, View
 from django.views.generic.list import MultipleObjectMixin
 
@@ -47,6 +50,24 @@ class TableDataViewMixin(ModelMixin):
     orderings = {}
     filters = {}
     results_per_page = 15
+    postgresql_search_configs = {
+        'da': 'danish',
+        'nl': 'dutch',
+        'en': 'english',
+        'fi': 'finnish',
+        'fr': 'french',
+        'de': 'german',
+        'hu': 'hungarian',
+        'it': 'italian',
+        'nb': 'norwegian',
+        'nn': 'norwegian',
+        'pt': 'portuguese',
+        'ro': 'romanian',
+        'ru': 'russian',
+        'es': 'spanish',
+        'sv': 'swedish',
+        'tr': 'turkish',
+    }
     access_control_allow_origin = ''
 
     def get_columns(self):
@@ -121,8 +142,12 @@ class TableDataViewMixin(ModelMixin):
         return values
 
     def search(self, queryset, q):
-        if not q:
-            return queryset
+        if connections[queryset.db].vendor == 'postgresql':
+            language_code = get_language().split('-', 1)[0]
+            search_config = self.postgresql_search_configs.get(language_code)
+            return queryset.annotate(
+                search=SearchVector(*self.search_lookups, config=search_config)
+            ).filter(search=SearchQuery(q, config=search_config))
         filters = Q()
         for lookup in self.search_lookups:
             filters |= Q(**{lookup: q})
@@ -133,7 +158,9 @@ class TableDataViewMixin(ModelMixin):
     def get_results_queryset(self):
         GET = self.request.GET
         qs = self.get_queryset()
-        qs = self.search(qs, GET.get('q'))
+        q = GET.get('q', '').strip()
+        if q:
+            qs = self.search(qs, q)
         columns = self.get_columns()
 
         filter_choices = map(urlunquote, GET.get('choices', '').split(','))
