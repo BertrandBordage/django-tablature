@@ -299,7 +299,7 @@ Table.prototype.setData = function () {
     if (k == 'q') {
       this.$searchInput.val(decodeURIComponent(v));
     } else if (k == 'orderings') {
-      this.orderings = decodeURIComponent(v).split(',').map(
+      this.orderings = v.split(',').map(
         function (s, _) { return parseInt(s); });
     } else if (k == 'choices') {
       this.filterChoices = decodeURIComponent(v).split(',').map(
@@ -310,14 +310,14 @@ Table.prototype.setData = function () {
           return decodeURIComponent(s);
         });
     } else if (k == 'page') {
-      this.pagination.current = parseInt(decodeURIComponent(v));
+      this.pagination.current = parseInt(v);
     }
   }.bind(this));
 };
 
 Table.prototype.getData = function () {
   return {
-    q: this.$searchInput.val(),
+    q: encodeURIComponent(this.$searchInput.val()),
     orderings: this.orderings.join(),
     choices: this.filterChoices.map(function (s, _) {
         if (s === null) {
@@ -336,10 +336,10 @@ Table.prototype.updateLocationHash = function (queryData) {
         if(queryString != "") {
           queryString += "&";
         }
-        queryString += k + '=' + encodeURIComponent(queryData[k]);
+        queryString += k + '=' + queryData[k];
       }
     }
-    document.location.hash = queryString;
+    history.replaceState(undefined, undefined, '#' + queryString);
 };
 
 Table.prototype.onKeyDown = function (e) {

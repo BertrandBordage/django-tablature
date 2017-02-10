@@ -158,7 +158,7 @@ class TableDataViewMixin(ModelMixin):
     def get_results_queryset(self):
         GET = self.request.GET
         qs = self.get_queryset()
-        q = GET.get('q', '').strip()
+        q = urlunquote(GET.get('q', '')).strip()
         if q:
             qs = self.search(qs, q)
         columns = self.get_columns()
