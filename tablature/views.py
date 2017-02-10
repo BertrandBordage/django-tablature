@@ -1,16 +1,22 @@
 # coding: utf-8
 
 from __future__ import unicode_literals
-import json
 
 from django.db.models import FieldDoesNotExist, Q
 from django.db.models.query import QuerySet
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.utils.encoding import force_text
 from django.utils.http import urlunquote
 from django.utils.text import capfirst
 from django.views.generic import ListView, TemplateView, View
 from django.views.generic.list import MultipleObjectMixin
+
+
+class ModelMixin:
+    def __init__(self, *args, **kwargs):
+        super(ModelMixin, self).__init__(*args, **kwargs)
+        if self.model is None:
+            self.model = self.queryset.model
 
 
 class TablePageViewMixin:
@@ -30,10 +36,10 @@ class TablePageViewMixin:
 
 
 class TablePageView(TablePageViewMixin, TemplateView):
-    pass
+    model = None
 
 
-class TableDataViewMixin:
+class TableDataViewMixin(ModelMixin):
     columns = ()
     columns_widths = {}
     verbose_columns = {}
@@ -177,8 +183,7 @@ class TableDataViewMixin:
     def get_json_response(self):
         data = (self.get_config() if 'get_config' in self.request.GET
                 else self.get_data())
-        response = HttpResponse(json.dumps(data),
-                                content_type='application/json')
+        response = JsonResponse(data)
         if self.access_control_allow_origin:
             response['Access-Control-Allow-Origin'] = \
                 self.access_control_allow_origin
