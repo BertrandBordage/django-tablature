@@ -160,19 +160,24 @@ class TableDataViewMixin(ModelMixin):
         offset = current_page * self.results_per_page
         return qs[offset:offset + self.results_per_page]
 
+    def get_value(self, obj, attr):
+        method = getattr(self, 'get_' + attr + '_display', None)
+        if method is not None:
+            return method(obj)
+        v = getattr(obj, 'get_' + attr + '_display', None)
+        if v is None:
+            v = getattr(obj, attr)
+        if callable(v):
+            v = v()
+        return v
+
     def get_results(self):
         results = []
         for obj in self.get_limited_results_queryset():
             row = []
             for attr in self.get_columns():
-                verbose_attr = 'get_' + attr + '_display'
-                if hasattr(obj, verbose_attr):
-                    attr = verbose_attr
-                v = getattr(obj, attr)
-                if callable(v):
-                    v = v()
-                v = '' if v is None else force_text(v)
-                row.append(v)
+                v = self.get_value(obj, attr)
+                row.append('' if v is None else force_text(v))
             results.append(row)
         return results
 
