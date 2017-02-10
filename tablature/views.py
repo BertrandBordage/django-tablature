@@ -41,6 +41,7 @@ class TableDataViewMixin:
     orderings = {}
     filters = {}
     results_per_page = 15
+    access_control_allow_origin = ''
 
     def get_columns(self):
         if self.columns:
@@ -178,8 +179,9 @@ class TableDataViewMixin:
                 else self.get_data())
         response = HttpResponse(json.dumps(data),
                                 content_type='application/json')
-        # FIXME: This may be a security issue.
-        response['Access-Control-Allow-Origin'] = '*'
+        if self.access_control_allow_origin:
+            response['Access-Control-Allow-Origin'] = \
+                self.access_control_allow_origin
         return response
 
 
