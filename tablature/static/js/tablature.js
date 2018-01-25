@@ -316,30 +316,41 @@ Table.prototype.setData = function () {
 };
 
 Table.prototype.getData = function () {
-  return {
-    q: encodeURIComponent(this.$searchInput.val()),
-    orderings: this.orderings.join(),
-    choices: this.filterChoices.map(function (s, _) {
+  var data = {};
+  var q = this.$searchInput.val();
+  if (q !== '') {
+    data['q'] = encodeURIComponent(q);
+  }
+  if (this.orderings.some(function (v) { return v !== 0; })) {
+    data['orderings'] = this.orderings.join();
+  }
+  if (this.filterChoices.some(function (v) { return v !== null; })) {
+    data['choices'] = this.filterChoices.map(function (s, _) {
         if (s === null) {
           return '';
         }
         return encodeURIComponent(s);
-      }).join(),
-    page: this.pagination.current
-  };
+      }).join();
+  }
+  if (this.pagination.current !== 0) {
+    data['page'] = this.pagination.current;
+  }
+  return data;
 };
 
 Table.prototype.updateLocationHash = function (queryData) {
   var queryString = '';
-    for (var k in queryData) {
-      if (queryData.hasOwnProperty(k)) {
-        if(queryString !== '') {
-          queryString += '&';
-        }
-        queryString += k + '=' + queryData[k];
+  for (var k in queryData) {
+    if (queryData.hasOwnProperty(k)) {
+      if(queryString !== '') {
+        queryString += '&';
       }
+      queryString += k + '=' + queryData[k];
     }
-    history.replaceState(undefined, undefined, '#' + queryString);
+  }
+  queryString = queryString === '' ? document.location.pathname
+                                   : '#' + queryString;
+  history.replaceState(undefined, undefined, queryString);
 };
 
 Table.prototype.onKeyDown = function (e) {
