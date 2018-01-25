@@ -8,7 +8,7 @@ function Pagination($pagination, switchPageHandler) {
 
 Pagination.prototype.setNumPages = function (numPages) {
   var last = numPages - 1;
-  if (last != this.last) {
+  if (last !== this.last) {
     var toPage = 0;
     if (typeof this.last === 'undefined') {
       toPage = this.current;
@@ -32,7 +32,7 @@ Pagination.prototype.createPageLink = function (i, content) {
     $item.addClass('disabled');
   }
   var $link = $item.find('a');
-  if (i == this.current) {
+  if (i === this.current) {
     $item.addClass('active');
     $link.append('<span class="sr-only">(current)</span>');
   }
@@ -76,7 +76,7 @@ Pagination.prototype.switchToPage = function (i, force) {
   if (typeof force === 'undefined') {
     force = false;
   }
-  if (((i != this.current) && !this.pageOutOfBounds(i)) || force) {
+  if (((i !== this.current) && !this.pageOutOfBounds(i)) || force) {
     this.current = i;
     this.update();
     this.switchPageHandler();
@@ -170,7 +170,7 @@ Table.prototype.createSortable = function (column, $flex, i) {
   var $icon = $('<i class="fa fa-sort"></i>');
   $sortable.append($icon);
   $sortable.click(function () {
-    if (this.orderings[i] == 1) {
+    if (this.orderings[i] === 1) {
       this.orderings[i] = -1;
     } else {
       this.orderings[i] += 1;
@@ -186,13 +186,13 @@ Table.prototype.updateSortables = function () {
     }
     var $icon = $sortable.find('i');
     $icon.attr('class', 'fa');
-    $sortable.toggleClass('active', this.orderings[i] != 0);
+    $sortable.toggleClass('active', this.orderings[i] !== 0);
     $icon.addClass(this.sortIcons[this.orderings[i].toString()]);
   }.bind(this));
 };
 
 Table.prototype.createFilter = function ($flex, i) {
-  if (this.filters[i].length == 0) {
+  if (this.filters[i].length === 0) {
     this.filterChoices.push(null);
     this.$filtersArray.push(null);
     return;
@@ -234,7 +234,7 @@ Table.prototype.createFilter = function ($flex, i) {
     $menu.append($choice);
     $choice.click(function (e) {
       e.preventDefault();
-      if (this.filterChoices[i] == value) {
+      if (this.filterChoices[i] === value) {
         this.filterChoices[i] = null;
       } else {
         this.filterChoices[i] = value;
@@ -255,7 +255,7 @@ Table.prototype.updateFilters = function () {
     $clearFilter.hide();
     $menu.find('li.active').removeClass('active');
     $menu.find('li').not($clearFilter).each(function (nthChoice, choice) {
-      if (this.filterChoices[i] == this.filters[i][nthChoice][0]) {
+      if (this.filterChoices[i] === this.filters[i][nthChoice][0]) {
         $(choice).addClass('active');
         $clearFilter.show();
         $filter.addClass('active');
@@ -273,7 +273,7 @@ Table.prototype.createHeaders = function () {
     $tr.append($cell);
     var $flex = $('<div class="flex"></div>');
     $cell.append($flex);
-    if (column != '') {
+    if (column !== '') {
       $flex.append($('<div class="column-name">' + column + '</div>'));
     }
 
@@ -296,12 +296,12 @@ Table.prototype.setData = function () {
   document.location.hash.slice(1).split('&').forEach(function (kv) {
     var t = kv.split('=');
     var k = t[0], v = t[1];
-    if (k == 'q') {
+    if (k === 'q') {
       this.$searchInput.val(decodeURIComponent(v));
-    } else if (k == 'orderings') {
+    } else if (k === 'orderings') {
       this.orderings = v.split(',').map(
         function (s, _) { return parseInt(s); });
-    } else if (k == 'choices') {
+    } else if (k === 'choices') {
       this.filterChoices = decodeURIComponent(v).split(',').map(
         function (s, _) {
           if (s === '') {
@@ -309,7 +309,7 @@ Table.prototype.setData = function () {
           }
           return decodeURIComponent(s);
         });
-    } else if (k == 'page') {
+    } else if (k === 'page') {
       this.pagination.current = parseInt(v);
     }
   }.bind(this));
@@ -333,8 +333,8 @@ Table.prototype.updateLocationHash = function (queryData) {
   var queryString = '';
     for (var k in queryData) {
       if (queryData.hasOwnProperty(k)) {
-        if(queryString != "") {
-          queryString += "&";
+        if(queryString !== '') {
+          queryString += '&';
         }
         queryString += k + '=' + queryData[k];
       }
@@ -347,7 +347,7 @@ Table.prototype.onKeyDown = function (e) {
       return;
   }
   var boundKeys = [33, 34, 35, 36, 37, 39];
-  if (boundKeys.indexOf(e.keyCode) != -1) {
+  if (boundKeys.indexOf(e.keyCode) !== -1) {
     e.preventDefault();
   }
 };
@@ -357,17 +357,17 @@ Table.prototype.onKeyUp = function (e) {
     return;
   }
   var newPage = null;
-  if (e.keyCode == 36) {  // Home key
+  if (e.keyCode === 36) {  // Home key
     newPage = 0;
-  } else if (e.keyCode == 37) {  // Left arrow key
+  } else if (e.keyCode === 37) {  // Left arrow key
     newPage = this.pagination.current - 1;
-  } else if (e.keyCode == 39) {  // Right arrow key
+  } else if (e.keyCode === 39) {  // Right arrow key
     newPage = this.pagination.current + 1;
-  } else if (e.keyCode == 33) {  // Page up key
+  } else if (e.keyCode === 33) {  // Page up key
     newPage = Math.max(this.pagination.current - 5, 0);
-  } else if (e.keyCode == 34) {  // Page down key
+  } else if (e.keyCode === 34) {  // Page down key
     newPage = Math.min(this.pagination.current + 5, this.pagination.last);
-  } else if (e.keyCode == 35) {  // End key
+  } else if (e.keyCode === 35) {  // End key
     newPage = this.pagination.last;
   }
   if (newPage !== null) {
@@ -383,7 +383,7 @@ Table.prototype.updateGrabbable = function () {
 };
 
 Table.prototype.onGrab = function (e) {
-  var isLeftClick = e.which == 1;
+  var isLeftClick = e.which === 1;
   if (isLeftClick && this.$results.hasClass('grabbable')) {
     this.$results.addClass('grabbing');
     this.pageX = e.pageX;
@@ -396,7 +396,7 @@ Table.prototype.onMove = function (e) {
   }
   e.preventDefault();
   var $tableContainer = this.$table.parent();
-  if (e.pageX != this.pageX) {
+  if (e.pageX !== this.pageX) {
     $tableContainer.scrollLeft($tableContainer.scrollLeft()
                                + (this.pageX - e.pageX));
     this.pageX = e.pageX;
