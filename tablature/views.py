@@ -7,10 +7,12 @@ from django.db import connections
 from django.db.models import FieldDoesNotExist, Q
 from django.db.models.query import QuerySet
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from django.utils.encoding import force_text
 from django.utils.http import urlunquote
 from django.utils.text import capfirst
 from django.utils.translation import get_language
+from django.views.decorators.cache import never_cache
 from django.views.generic import ListView, TemplateView, View
 from django.views.generic.list import MultipleObjectMixin
 
@@ -34,6 +36,7 @@ class TablePageViewMixin:
         context.update(
             verbose_name_plural=self.model._meta.verbose_name_plural,
             ajax_url=self.get_ajax_url(),
+            actions=self.actions()
         )
         return context
 
@@ -227,6 +230,9 @@ class TableDataView(TableDataViewMixin, MultipleObjectMixin, View):
         return self.get_json_response()
 
 
+# Never caching fixes an issue with Chrome 63 where the browser returns
+# the cached AJAX response instead of the HTML response when we use "previous".
+@method_decorator(never_cache, name='dispatch')
 class TableView(TablePageViewMixin, TableDataViewMixin, ListView):
     def get(self, request, *args, **kwargs):
         if request.is_ajax():
