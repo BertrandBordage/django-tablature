@@ -36,7 +36,6 @@ class TablePageViewMixin:
         context.update(
             verbose_name_plural=self.model._meta.verbose_name_plural,
             ajax_url=self.get_ajax_url(),
-            actions=self.actions()
         )
         return context
 
