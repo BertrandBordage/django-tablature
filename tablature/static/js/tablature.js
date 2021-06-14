@@ -299,7 +299,7 @@ Table.prototype.setData = function () {
     if (k === 'q') {
       this.$searchInput.val(decodeURIComponent(v));
     } else if (k === 'orderings') {
-      this.orderings = v.split(',').map(
+      this.orderings = decodeURIComponent(v).split(',').map(
         function (s, _) { return parseInt(s); });
     } else if (k === 'choices') {
       this.filterChoices = decodeURIComponent(v).split(',').map(
