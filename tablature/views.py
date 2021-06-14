@@ -100,13 +100,17 @@ class TableDataViewMixin(ModelMixin):
             return self.columns_widths[column]
         return 'initial'
 
+    @property
+    def search_enabled(self):
+        return bool(self.search_lookups)
+
     def get_config(self):
         columns = self.get_columns()
         return {
             'columns': [force_text(self.get_verbose_column(c))
                         for c in columns],
             'columns_widths': [self.get_column_width(c) for c in columns],
-            'search_enabled': bool(self.search_lookups),
+            'search_enabled': self.search_enabled,
             'sortables': [bool(self.get_ordering_for_column(c, 1))
                           for c in columns],
             'filters': [self.get_filter(c) for c in columns],
