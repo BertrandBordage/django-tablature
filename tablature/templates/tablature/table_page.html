@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}
+  {{ verbose_name_plural|capfirst }}
+{% endblock %}
+
+
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/less" href="{% static 'less/tablature.less' %}" />
+{% endblock %}
+
+
+{% block content %}
+  {% include 'tablature/includes/table.html' %}
+{% endblock %}
+
+
+{% block js %}
+  {{ block.super }}
+  <script src="{% static 'js/tablature.js' %}"></script>
+{% endblock %}
