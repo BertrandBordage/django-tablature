@@ -1,1 +1,1 @@
-Django>=1.7
+Django>=2.0
