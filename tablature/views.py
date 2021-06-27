@@ -3,8 +3,9 @@
 from __future__ import unicode_literals
 
 from django.contrib.postgres.search import SearchVector, SearchQuery
+from django.core.exceptions import FieldDoesNotExist
 from django.db import connections
-from django.db.models import FieldDoesNotExist, Q
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
