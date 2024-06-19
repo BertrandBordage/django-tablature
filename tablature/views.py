@@ -240,6 +240,6 @@ class TableDataView(TableDataViewMixin, MultipleObjectMixin, View):
 @method_decorator(never_cache, name='dispatch')
 class TableView(TablePageViewMixin, TableDataViewMixin, ListView):
     def get(self, request, *args, **kwargs):
-        if request.is_ajax():
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return self.get_json_response()
         return super(TableView, self).get(request, *args, **kwargs)
