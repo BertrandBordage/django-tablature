@@ -2,6 +2,8 @@
 
 from __future__ import unicode_literals
 
+from urllib.parse import unquote
+
 from django.contrib.postgres.search import SearchVector, SearchQuery
 from django.core.exceptions import FieldDoesNotExist
 from django.db import connections
@@ -9,8 +11,7 @@ from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from django.utils.encoding import force_text
-from django.utils.http import urlunquote
+from django.utils.encoding import force_str
 from django.utils.text import capfirst
 from django.utils.translation import get_language
 from django.views.decorators.cache import never_cache
@@ -108,7 +109,7 @@ class TableDataViewMixin(ModelMixin):
     def get_config(self):
         columns = self.get_columns()
         return {
-            'columns': [force_text(self.get_verbose_column(c))
+            'columns': [force_str(self.get_verbose_column(c))
                         for c in columns],
             'columns_widths': [self.get_column_width(c) for c in columns],
             'search_enabled': self.search_enabled,
@@ -165,12 +166,12 @@ class TableDataViewMixin(ModelMixin):
     def get_results_queryset(self):
         GET = self.request.GET
         qs = self.get_queryset()
-        q = urlunquote(GET.get('q', '')).strip()
+        q = unquote(GET.get('q', '')).strip()
         if q:
             qs = self.search(qs, q)
         columns = self.get_columns()
 
-        filter_choices = map(urlunquote, GET.get('choices', '').split(','))
+        filter_choices = map(unquote, GET.get('choices', '').split(','))
         for column, choice in zip(columns, filter_choices):
             if choice:
                 method = getattr(self, 'filter_' + column, None)
@@ -211,7 +212,7 @@ class TableDataViewMixin(ModelMixin):
             row = []
             for attr in self.get_columns():
                 v = self.get_value(obj, attr)
-                row.append('' if v is None else force_text(v))
+                row.append('' if v is None else force_str(v))
             results.append(row)
         return results
 
