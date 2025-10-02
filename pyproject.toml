@@ -1,0 +1,27 @@
+[project]
+name = "django-tablature"
+version = "0.2.3"
+authors = [
+  {name = "Bertrand Bordage", email = "bordage.bertrand@gmail.com"},
+]
+description = "Easy to use library to display data in an ergonomic and fast table."
+readme = "README.rst"
+requires-python = ">=3.4"
+license = "BSD-2-Clause"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Framework :: Django",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Topic :: Internet :: WWW/HTTP",
+]
+dependencies = [
+  "django>=2.0",
+]
+
+[project.urls]
+Repository = "https://github.com/BertrandBordage/django-tablature"
+
+[tool.ruff.format]
+quote-style = "single"
