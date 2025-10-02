@@ -8,6 +8,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 **/.venv/
+**/.ruff_cache/
 env/
 build/
 develop-eggs/

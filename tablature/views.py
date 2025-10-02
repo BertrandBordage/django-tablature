@@ -109,12 +109,10 @@ class TableDataViewMixin(ModelMixin):
     def get_config(self):
         columns = self.get_columns()
         return {
-            'columns': [force_str(self.get_verbose_column(c))
-                        for c in columns],
+            'columns': [force_str(self.get_verbose_column(c)) for c in columns],
             'columns_widths': [self.get_column_width(c) for c in columns],
             'search_enabled': self.search_enabled,
-            'sortables': [bool(self.get_ordering_for_column(c, 1))
-                          for c in columns],
+            'sortables': [bool(self.get_ordering_for_column(c, 1)) for c in columns],
             'filters': [self.get_filter(c) for c in columns],
             'results_per_page': self.results_per_page,
         }
@@ -137,8 +135,7 @@ class TableDataViewMixin(ModelMixin):
             ordering = [ordering]
         if direction == 1:
             return ordering
-        return [lookup[1:] if lookup[0] == '-' else '-' + lookup
-                for lookup in ordering]
+        return [lookup[1:] if lookup[0] == '-' else '-' + lookup for lookup in ordering]
 
     def get_filter(self, column):
         if column not in self.filters:
@@ -175,8 +172,11 @@ class TableDataViewMixin(ModelMixin):
         for column, choice in zip(columns, filter_choices):
             if choice:
                 method = getattr(self, 'filter_' + column, None)
-                qs = (qs.filter(**{column: choice}) if method is None
-                      else method(qs, choice))
+                qs = (
+                    qs.filter(**{column: choice})
+                    if method is None
+                    else method(qs, choice)
+                )
 
         if 'orderings' in GET:
             order_directions = map(int, GET.get('orderings', '').split(','))
@@ -193,7 +193,7 @@ class TableDataViewMixin(ModelMixin):
         qs = self.get_results_queryset()
         current_page = int(self.request.GET.get('page', '0'))
         offset = current_page * self.results_per_page
-        return qs[offset:offset + self.results_per_page]
+        return qs[offset : offset + self.results_per_page]
 
     def get_value(self, obj, attr):
         method = getattr(self, 'get_' + attr + '_display', None)
@@ -217,16 +217,18 @@ class TableDataViewMixin(ModelMixin):
         return results
 
     def get_data(self):
-        return {'results': self.get_results(),
-                'count': self.get_results_queryset().count()}
+        return {
+            'results': self.get_results(),
+            'count': self.get_results_queryset().count(),
+        }
 
     def get_json_response(self):
-        data = (self.get_config() if 'get_config' in self.request.GET
-                else self.get_data())
+        data = (
+            self.get_config() if 'get_config' in self.request.GET else self.get_data()
+        )
         response = JsonResponse(data)
         if self.access_control_allow_origin:
-            response['Access-Control-Allow-Origin'] = \
-                self.access_control_allow_origin
+            response['Access-Control-Allow-Origin'] = self.access_control_allow_origin
         return response
 
 
